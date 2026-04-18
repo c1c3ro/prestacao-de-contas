@@ -12,24 +12,43 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
+        console.log("Authorize called with credentials:", credentials?.email);
         const email = credentials?.email?.trim().toLowerCase();
         const password = credentials?.password;
-        if (!email || !password) return null;
+        if (!email || !password) {
+          console.log("Missing email or password");
+          return null;
+        }
 
-        const user = await prisma.pmjnUsuario.findUnique({
-          where: { email },
-        });
-        if (!user) return null;
+        try {
+          console.log("Connecting to database...");
+          const user = await prisma.pmjnUsuario.findUnique({
+            where: { email },
+          });
+          console.log("User found:", user ? "yes" : "no");
+          if (!user) {
+            console.log("User not found for email:", email);
+            return null;
+          }
 
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
+          const ok = await bcrypt.compare(password, user.passwordHash);
+          console.log("Password match:", ok);
+          if (!ok) {
+            console.log("Password incorrect");
+            return null;
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.nome,
-          role: user.papel,
-        };
+          console.log("Login successful for:", email);
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.nome,
+            role: user.papel,
+          };
+        } catch (error) {
+          console.error("Database error in authorize:", error);
+          return null;
+        }
       },
     }),
   ],

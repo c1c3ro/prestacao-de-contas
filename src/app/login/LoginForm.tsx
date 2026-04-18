@@ -21,7 +21,7 @@ export function LoginForm() {
     const res = await signIn("credentials", {
       email: email.trim().toLowerCase(),
       password,
-      redirect: false,
+      redirect: true,
       callbackUrl,
     });
     setLoading(false);
@@ -29,8 +29,7 @@ export function LoginForm() {
       setErr("E-mail ou senha incorretos.");
       return;
     }
-    router.push(callbackUrl);
-    router.refresh();
+    // NextAuth redireciona automaticamente com redirect: true
   }
 
   return (
