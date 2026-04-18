@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model PmjnUsuario {
+  id              String                 @id @default(cuid())
+  email           String                 @unique(map: "email") @db.VarChar(255)
+  passwordHash    String                 @map("password_hash") @db.VarChar(255)
+  nome            String                 @db.VarChar(200)
+  papel           PmjnPapelUsuario       @default(GESTOR)
+  criadoEm        DateTime               @default(now()) @map("criado_em")
+  atualizadoEm    DateTime               @default(now()) @updatedAt @map("atualizado_em")
+  despesasCriadas PmjnDespesa[]          @relation("DespesaAutor")
+  fechamentos     PmjnFechamentoMensal[]
+  logs            PmjnLog[]
+  repassesCriados PmjnRepasse[]          @relation("RepasseAutor")
+
+  @@map("pmjn_usuario")
+}
+
+model PmjnRepasse {
+  id                  String        @id @default(cuid())
+  valor               Decimal       @db.Decimal(15, 2)
+  dataRecebimento     DateTime      @map("data_recebimento") @db.Date
+  numeroOrdemBancaria String        @map("numero_ordem_bancaria") @db.VarChar(120)
+  extratoCaminho      String?       @map("extrato_caminho") @db.VarChar(500)
+  observacoes         String?       @db.Text
+  usuarioId           String        @map("usuario_id")
+  criadoEm            DateTime      @default(now()) @map("criado_em")
+  atualizadoEm        DateTime      @default(now()) @updatedAt @map("atualizado_em")
+  despesas            PmjnDespesa[]
+  usuario             PmjnUsuario   @relation("RepasseAutor", fields: [usuarioId], references: [id], onUpdate: Restrict, map: "fk_repasse_usuario")
+
+  @@index([usuarioId], map: "fk_repasse_usuario")
+  @@index([dataRecebimento], map: "idx_repasse_data")
+  @@map("pmjn_repasse")
+}
+
+model PmjnCategoriaDespesa {
+  id       String        @id @default(cuid())
+  nome     String        @db.VarChar(120)
+  ativa    Boolean       @default(true) @map("ativa")
+  criadoEm DateTime      @default(now()) @map("criado_em")
+  despesas PmjnDespesa[]
+
+  @@map("pmjn_categoria_despesa")
+}
+
+model PmjnDespesa {
+  id                 String               @id @default(cuid())
+  repasseId          String               @map("repasse_id")
+  categoriaId        String               @map("categoria_id")
+  valor              Decimal              @db.Decimal(15, 2)
+  dataDespesa        DateTime             @map("data_despesa") @db.Date
+  descricao          String?              @db.Text
+  notaFiscalCaminho  String?              @map("nota_fiscal_caminho") @db.VarChar(500)
+  comprovanteCaminho String?              @map("comprovante_caminho") @db.VarChar(500)
+  usuarioId          String               @map("usuario_id")
+  criadoEm           DateTime             @default(now()) @map("criado_em")
+  atualizadoEm       DateTime             @default(now()) @updatedAt @map("atualizado_em")
+  categoria          PmjnCategoriaDespesa @relation(fields: [categoriaId], references: [id], onUpdate: Restrict, map: "fk_despesa_categoria")
+  repasse            PmjnRepasse          @relation(fields: [repasseId], references: [id], onUpdate: Restrict, map: "fk_despesa_repasse")
+  usuario            PmjnUsuario          @relation("DespesaAutor", fields: [usuarioId], references: [id], onUpdate: Restrict, map: "fk_despesa_usuario")
+
+  @@index([categoriaId], map: "fk_despesa_categoria")
+  @@index([usuarioId], map: "fk_despesa_usuario")
+  @@index([dataDespesa], map: "idx_despesa_data")
+  @@index([repasseId], map: "idx_despesa_repasse")
+  @@map("pmjn_despesa")
+}
+
+model PmjnFechamentoMensal {
+  id        String      @id @default(cuid())
+  ano       Int
+  mes       Int
+  criadoEm  DateTime    @default(now()) @map("criado_em")
+  usuarioId String      @map("usuario_id")
+  usuario   PmjnUsuario @relation(fields: [usuarioId], references: [id], onUpdate: Restrict, map: "fk_fechamento_usuario")
+
+  @@unique([ano, mes], map: "uq_fechamento_ano_mes")
+  @@index([usuarioId], map: "fk_fechamento_usuario")
+  @@map("pmjn_fechamento_mensal")
+}
+
+model PmjnLog {
+  id        String       @id @default(cuid())
+  mensagem  String       @db.Text
+  usuarioId String?      @map("usuario_id")
+  metadata  String?      @db.LongText
+  criadoEm  DateTime     @default(now()) @map("criado_em")
+  usuario   PmjnUsuario? @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_log_usuario")
+
+  @@index([usuarioId], map: "fk_log_usuario")
+  @@index([criadoEm], map: "idx_log_criado")
+  @@map("pmjn_log")
+}
+
+enum PmjnPapelUsuario {
+  GESTOR
+  AUDITOR
+}
