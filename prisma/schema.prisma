@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -34,7 +34,7 @@ model PmjnRepasse {
   criadoEm            DateTime      @default(now()) @map("criado_em")
   atualizadoEm        DateTime      @default(now()) @updatedAt @map("atualizado_em")
   despesas            PmjnDespesa[]
-  usuario             PmjnUsuario   @relation("RepasseAutor", fields: [usuarioId], references: [id], onUpdate: Restrict, map: "fk_repasse_usuario")
+  usuario             PmjnUsuario   @relation("RepasseAutor", fields: [usuarioId], references: [id], onUpdate: Restrict)
 
   @@index([usuarioId], map: "fk_repasse_usuario")
   @@index([dataRecebimento], map: "idx_repasse_data")
@@ -63,9 +63,9 @@ model PmjnDespesa {
   usuarioId          String               @map("usuario_id")
   criadoEm           DateTime             @default(now()) @map("criado_em")
   atualizadoEm       DateTime             @default(now()) @updatedAt @map("atualizado_em")
-  categoria          PmjnCategoriaDespesa @relation(fields: [categoriaId], references: [id], onUpdate: Restrict, map: "fk_despesa_categoria")
-  repasse            PmjnRepasse          @relation(fields: [repasseId], references: [id], onUpdate: Restrict, map: "fk_despesa_repasse")
-  usuario            PmjnUsuario          @relation("DespesaAutor", fields: [usuarioId], references: [id], onUpdate: Restrict, map: "fk_despesa_usuario")
+  categoria          PmjnCategoriaDespesa @relation(fields: [categoriaId], references: [id], onUpdate: Restrict)
+  repasse            PmjnRepasse          @relation(fields: [repasseId], references: [id], onUpdate: Restrict)
+  usuario            PmjnUsuario          @relation("DespesaAutor", fields: [usuarioId], references: [id], onUpdate: Restrict)
 
   @@index([categoriaId], map: "fk_despesa_categoria")
   @@index([usuarioId], map: "fk_despesa_usuario")
@@ -80,7 +80,7 @@ model PmjnFechamentoMensal {
   mes       Int
   criadoEm  DateTime    @default(now()) @map("criado_em")
   usuarioId String      @map("usuario_id")
-  usuario   PmjnUsuario @relation(fields: [usuarioId], references: [id], onUpdate: Restrict, map: "fk_fechamento_usuario")
+  usuario   PmjnUsuario @relation(fields: [usuarioId], references: [id], onUpdate: Restrict)
 
   @@unique([ano, mes], map: "uq_fechamento_ano_mes")
   @@index([usuarioId], map: "fk_fechamento_usuario")
@@ -91,9 +91,9 @@ model PmjnLog {
   id        String       @id @default(cuid())
   mensagem  String       @db.Text
   usuarioId String?      @map("usuario_id")
-  metadata  String?      @db.LongText
+  metadata  String?      @db.Text
   criadoEm  DateTime     @default(now()) @map("criado_em")
-  usuario   PmjnUsuario? @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_log_usuario")
+  usuario   PmjnUsuario? @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
   @@index([usuarioId], map: "fk_log_usuario")
   @@index([criadoEm], map: "idx_log_criado")
