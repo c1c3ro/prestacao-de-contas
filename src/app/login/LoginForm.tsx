@@ -22,6 +22,7 @@ export function LoginForm() {
       email: email.trim().toLowerCase(),
       password,
       redirect: false,
+      callbackUrl,
     });
     setLoading(false);
     if (res?.error) {
