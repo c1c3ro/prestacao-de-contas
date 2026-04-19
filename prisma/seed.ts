@@ -1,6 +1,9 @@
 import { PrismaClient, PmjnPapelUsuario } from "@prisma/client";
+import { resolvePrismaDatabaseUrl } from "../src/lib/prisma-database-url";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: { db: { url: resolvePrismaDatabaseUrl() } },
+});
 
 async function main() {
   await prisma.pmjnUsuario.upsert({
