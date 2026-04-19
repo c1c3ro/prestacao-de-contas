@@ -6,6 +6,7 @@ import {
   pmjnCalcularSaldo,
   pmjnGarantirRepasseNaoCongelado,
 } from "@/lib/pmjn-financeiro";
+import { pmjnPersistedFilePathFromClient } from "@/lib/pmjn-file-storage";
 import { Prisma } from "@prisma/client";
 
 export async function GET() {
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
       valor: new Prisma.Decimal(parsed.data.valor),
       dataRecebimento,
       numeroOrdemBancaria: parsed.data.numeroOrdemBancaria.trim(),
-      extratoCaminho: parsed.data.extratoCaminho ?? null,
+      extratoCaminho: pmjnPersistedFilePathFromClient(parsed.data.extratoCaminho),
       observacoes: parsed.data.observacoes ?? null,
       usuarioId: session!.user.id,
     },

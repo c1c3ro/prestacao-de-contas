@@ -48,8 +48,8 @@ export default function EditarRepassePage() {
         setErr((j as { error?: string }).error ?? "Falha no upload.");
         return;
       }
-      const uj = (await ur.json()) as { url: string };
-      extratoCaminho = uj.url;
+      const uj = (await ur.json()) as { url: string | null; storageSkipped?: boolean };
+      extratoCaminho = uj.url ?? null;
     }
 
     const body = {

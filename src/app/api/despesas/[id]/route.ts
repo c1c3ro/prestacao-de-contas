@@ -8,6 +8,7 @@ import {
   pmjnRegistrarLogEstouro,
   pmjnValidarNF,
 } from "@/lib/pmjn-financeiro";
+import { pmjnPersistedFilePathFromClient } from "@/lib/pmjn-file-storage";
 import { Prisma } from "@prisma/client";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -76,7 +77,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: msg }, { status: 423 });
   }
 
-  const nf = parsed.data.notaFiscalCaminho;
+  const nf = pmjnPersistedFilePathFromClient(parsed.data.notaFiscalCaminho);
   if (nf && !pmjnValidarNF(nf)) {
     return NextResponse.json(
       { error: "Nota fiscal: envie arquivo PDF ou XML." },
@@ -120,7 +121,7 @@ export async function PUT(req: Request, ctx: Ctx) {
       dataDespesa,
       descricao: parsed.data.descricao ?? null,
       notaFiscalCaminho: nf ?? null,
-      comprovanteCaminho: parsed.data.comprovanteCaminho ?? null,
+      comprovanteCaminho: pmjnPersistedFilePathFromClient(parsed.data.comprovanteCaminho),
       usuarioId: session!.user.id,
     },
   });

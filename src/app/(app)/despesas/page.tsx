@@ -36,8 +36,9 @@ export default function DespesasPage() {
         <div>
           <h1 className="text-2xl font-semibold text-slate-950">Despesas</h1>
           <p className="text-sm text-slate-800">
-            Cada despesa está vinculada a um repasse e exige NF e comprovante quando
-            cadastrada.
+            Cada despesa está vinculada a um repasse. Anexos (NF e comprovante) são
+            obrigatórios apenas quando o servidor persiste arquivos (por exemplo, em
+            ambiente local); na Vercel eles ficam opcionais e não são armazenados.
           </p>
         </div>
         {gestor && (

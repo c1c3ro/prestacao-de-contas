@@ -47,8 +47,8 @@ export default function EditarDespesaPage() {
     up.append("file", f);
     const ur = await fetch("/api/upload", { method: "POST", body: up, credentials: "include" });
     if (!ur.ok) throw new Error("Falha no upload.");
-    const uj = (await ur.json()) as { url: string };
-    return uj.url;
+    const uj = (await ur.json()) as { url: string | null; storageSkipped?: boolean };
+    return uj.url ?? null;
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {

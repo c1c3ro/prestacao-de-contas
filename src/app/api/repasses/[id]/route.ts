@@ -6,6 +6,7 @@ import {
   pmjnCalcularSaldo,
   pmjnGarantirRepasseNaoCongelado,
 } from "@/lib/pmjn-financeiro";
+import { pmjnPersistedFilePathFromClient } from "@/lib/pmjn-file-storage";
 import { Prisma } from "@prisma/client";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -88,7 +89,7 @@ export async function PUT(req: Request, ctx: Ctx) {
       valor: novoValor,
       dataRecebimento,
       numeroOrdemBancaria: parsed.data.numeroOrdemBancaria.trim(),
-      extratoCaminho: parsed.data.extratoCaminho ?? null,
+      extratoCaminho: pmjnPersistedFilePathFromClient(parsed.data.extratoCaminho),
       observacoes: parsed.data.observacoes ?? null,
     },
   });

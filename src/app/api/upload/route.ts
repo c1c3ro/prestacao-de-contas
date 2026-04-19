@@ -2,6 +2,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { requireGestor } from "@/lib/api-auth";
+import { pmjnCanPersistUploadedFiles } from "@/lib/pmjn-file-storage";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -27,6 +28,11 @@ export async function POST(req: Request) {
       { error: "Extensão não permitida (use PDF, XML ou imagem)." },
       { status: 400 },
     );
+  }
+
+  if (!pmjnCanPersistUploadedFiles()) {
+    await file.arrayBuffer();
+    return NextResponse.json({ url: null, storageSkipped: true });
   }
 
   const buf = Buffer.from(await file.arrayBuffer());

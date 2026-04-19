@@ -32,8 +32,8 @@ export default function NovaDespesaPage() {
     up.append("file", f);
     const ur = await fetch("/api/upload", { method: "POST", body: up, credentials: "include" });
     if (!ur.ok) throw new Error("Falha no upload.");
-    const uj = (await ur.json()) as { url: string };
-    return uj.url;
+    const uj = (await ur.json()) as { url: string | null; storageSkipped?: boolean };
+    return uj.url ?? null;
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -41,8 +41,25 @@ export default function NovaDespesaPage() {
     setErr(null);
     const fd = new FormData(e.currentTarget);
     try {
-      const nf = await uploadFile(fd.get("nf") as File);
-      const cp = await uploadFile(fd.get("comprovante") as File);
+      const envR = await fetch("/api/app-env");
+      const env = (await envR.json()) as { persistUploadedFiles: boolean };
+      const persist = env.persistUploadedFiles;
+
+      const nfFile = fd.get("nf") as File | null;
+      const cpFile = fd.get("comprovante") as File | null;
+      if (persist) {
+        if (!nfFile || nfFile.size === 0) {
+          setErr("Envie a nota fiscal (PDF ou XML).");
+          return;
+        }
+        if (!cpFile || cpFile.size === 0) {
+          setErr("Envie o comprovante de pagamento.");
+          return;
+        }
+      }
+
+      const nf = await uploadFile(nfFile);
+      const cp = await uploadFile(cpFile);
       const body = {
         repasseId: String(fd.get("repasseId")),
         categoriaId: String(fd.get("categoriaId")),
@@ -135,7 +152,6 @@ export default function NovaDespesaPage() {
             name="nf"
             type="file"
             accept=".pdf,.xml"
-            required
             className="mt-1 w-full text-sm text-slate-800 file:mr-2 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-900"
           />
         </label>
@@ -145,7 +161,6 @@ export default function NovaDespesaPage() {
             name="comprovante"
             type="file"
             accept=".pdf,.png,.jpg,.jpeg"
-            required
             className="mt-1 w-full text-sm text-slate-800 file:mr-2 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-900"
           />
         </label>
