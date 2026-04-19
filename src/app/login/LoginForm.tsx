@@ -71,10 +71,6 @@ export function LoginForm() {
             {loading ? "Entrando…" : "Entrar"}
           </button>
         </form>
-        <p className="mt-6 text-xs font-medium leading-relaxed text-slate-700">
-          Após o seed: gestor@hospital.local / gestor123 · auditor@prefeitura.local /
-          auditor123
-        </p>
       </div>
     </div>
   );
